@@ -44,7 +44,7 @@ function getCodeArea({findActive = false, index = -1} = {}){
 
 
 let isEnterBt = false
-let flag = "_$_"
+let flag = "_±FLAG±_"
 function setFlag(el){
     alertNum("setFlag<"+el.textContent+">")
     el.innerHTML= el.innerHTML.replace("<div>", "\n"+flag)
@@ -52,7 +52,6 @@ function setFlag(el){
     alertNum("!setFlag<"+el.textContent+">")
 }
 function removeFlag(params){
-
     params.position = params.parent.textContent.indexOf(flag)
     //params.parent.textContent = params.parent.textContent.replace(flag,"")
     let child = params.parent.firstChild
@@ -71,7 +70,7 @@ function simpleHighlighter(el) {
     alertNum("simpleHighlighter")
     alertNum("REPLASE DIV")
     alertNum(el)
-    alertNum(el.innerHTML)
+    alertNum("<"+el.innerHTML+">")
     //предпологается что тег <div> появляется только
     // при нажатии Enter
     if(el.innerHTML.indexOf("<div>")!=-1){
@@ -90,6 +89,7 @@ function simpleHighlighter(el) {
         html  = '',
         rule;
     words.forEach(word => {
+
         if (rule = getHlRuleFor(word))
             html += `<span class="${rule.cl}">${rule.m}</span>`;
         else
@@ -183,26 +183,33 @@ function setCursorPosition(parent, position) {
     alertNum("setCursorPosition END")
 }
 
+
+
+
 function textToArray(el) {
-    alertNum("textToArray")
-    alertNum("textContent="+el.textContent)
-    const RE = /(^|\(+?|[^\w]+?)((?:"[^"]*")|(?:[{}\w]+))(\)+?[\S]+?)?/gmi;   // эта регулярка весьма далека от совершенства :)
+    //alertNum("textToArray")
+    //alertNum("textContent="+el.textContent)
+    //эта регулярка должна делить код на слова, которые потом ЦЕЛИКОМ всё слово можно раскрасить
+    const RE = /(^|\(+?|[^\w]+?)((?:"[^"]*")|(?:[{}\w]+))(\)+?[\S]+?)?/gmi;   // эта регулярка пропускает пробелы и переносы строки в конце
     let result = [],
-        match, i;
+        match, i, index=0;
     while (match = RE.exec(el.textContent)) {
         for (i = 1; i < match.length; i++) {
             if (match[i]){
                 result.push(match[i]);
-                alertNum("<"+match[i]+">")
+                index+=match[i].length;
+                //alertNum("<"+match[i]+">")
             }
         }
     }
-    alertNum("textToArray END")
+    for (let i = index;i<el.textContent.length;i++){
+        result.push(el.textContent[i]);
+    }
+    //alertNum("textToArray END")
     return result;
 }
 
 function getHlRuleFor(word) {
-    alertNum("getHlRuleFor")
     alertNum("<"+word+">")
     let rule, mr;
 
@@ -210,13 +217,12 @@ function getHlRuleFor(word) {
         if (rule = HL_RULES.find(r => mr = word.match(r.re)))
         if(!!rule){
             rule.m = mr[1];
-            alertNum("<"+rule.m+">")
+            //alertNum("<"+rule.m+">")
         }
     }catch (exception) {
 
     }
 
-    alertNum("getHlRuleFor END")
     return rule;
 }
 
@@ -317,3 +323,12 @@ class Cursor {
         return false;
     }
 }
+
+/*
+* БАГИ
+* подсвечивает fuunctio
+* клавиша Enter в новой системе позиции курсора
+* если после { добавить } то удалится
+* { и } ставятся только с пробелом перед
+*
+* */
