@@ -52,6 +52,7 @@ class Cursor {
         }
     }
 
+
     static _createRange(node, chars, range) {
         if (!range) {
             range = document.createRange()
@@ -81,6 +82,9 @@ class Cursor {
         }
 
         return range;
+    }
+    static _moveCursor(value){
+        Cursor.lastOffset += value
     }
 
     static _isChildOf(node, parentElement) {
@@ -124,10 +128,11 @@ class CodeArea{
             let selection = window.getSelection()
             let node = selection.focusNode;
             let charCount = selection.focusOffset;
-            node.textContent = CodeArea.insert(node.textContent,"\t",charCount)
+            node.textContent = CodeArea._insert(node.textContent,"\t",charCount)
+            Cursor._moveCursor(1)
         }
     }
-    static insert(str, substr, pos) {
+    static _insert(str, substr, pos) {
         var array = str.split('');
         array.splice(pos, 0, substr);
         return array.join('');
@@ -142,7 +147,7 @@ class CodeArea{
             }
             CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("<div>", replaceString)
             CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("</div>", "")
-            Cursor.lastOffset+=1
+            Cursor._moveCursor(1)
         }
     }
     static checkKeys(keyEvent){
