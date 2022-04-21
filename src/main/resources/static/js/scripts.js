@@ -1,8 +1,3 @@
-window.onload=function(){
-    CodeArea.enableCode("cpp")
-}
-
-
 class Cursor {
     static lastOffset;
 
@@ -12,12 +7,12 @@ class Cursor {
             node;
 
         if (selection.focusNode) {
-            if (Cursor._isChildOf(selection.focusNode, codeArea)) {
+            if (Cursor._isChildOf(selection.focusNode, CodeArea._codeArea)) {
                 node = selection.focusNode;
                 charCount = selection.focusOffset;
 
                 while (node) {
-                    if (node === codeArea) {
+                    if (node === CodeArea._codeArea) {
                         break;
                     }
                     if (node.previousSibling) {
@@ -101,6 +96,24 @@ class Cursor {
 class CodeArea{
     static _codeArea;
     static _enableTabKey;
+    static _linkStyle;
+    static checkKeys(keyEvent){
+        CodeArea._checkEnter(keyEvent)
+        CodeArea._checkTab(keyEvent)
+    }
+    static _checkEnter(keyEvent) {
+        if(keyEvent.key === "Enter"){
+            let replaceString="\n"
+            if(!CodeArea._hasNextSibling()){//если последний Sibling
+                if(CodeArea._isLastCharacterOnNode()){//если курсор в конце
+                    replaceString+="\n";
+                }
+            }
+            CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("<div>", replaceString)
+            CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("</div>", "")
+            Cursor._moveCursor(1)
+        }
+    }
     static _hasNextSibling() {
         return window.getSelection().focusNode.nextSibling
     }
@@ -110,18 +123,6 @@ class CodeArea{
         console.log(selection.focusOffset)
         console.log(selection.focusNode.textContent.length)
         return selection.focusOffset==selection.focusNode.textContent.length
-    }
-
-    static enableTabKey() {
-        CodeArea._enableTabKey = true;
-        window.onkeydown=function(keyEvent){
-            if(keyEvent.code == "Tab") //перехватываем tab от гнусного браузера
-                return false
-        }
-    }
-    static disableTabKey() {
-        CodeArea._enableTabKey = false;
-        window.onkeydown=function(){ }
     }
     static _checkTab(keyEvent) {
         if(keyEvent.key === "Tab" && CodeArea._enableTabKey){
@@ -137,45 +138,67 @@ class CodeArea{
         array.splice(pos, 0, substr);
         return array.join('');
     }
-    static _checkEnter(keyEvent) {
-        if(keyEvent.key === "Enter"){
-            let replaceString="\n"
-            if(!CodeArea._hasNextSibling()){//если последний Sibling
-                if(CodeArea._isLastCharacterOnNode()){//если курсор в конце
-                    replaceString+="\n";
-                }
-            }
-            CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("<div>", replaceString)
-            CodeArea._codeArea.innerHTML= CodeArea._codeArea.innerHTML.replace("</div>", "")
-            Cursor._moveCursor(1)
+
+    static enableCode(tagClass,typeCode){
+        window.onload=function(){
+            CodeArea._setCodeArea(tagClass)
+            CodeArea._setAttributes(typeCode)
+            CodeArea._enableHighlight()
         }
-    }
-    static checkKeys(keyEvent){
-        CodeArea._checkEnter(keyEvent)
-        CodeArea._checkTab(keyEvent)
-    }
 
-    static enableHighlight(){
-        hljs.highlightAll();
-        window.onkeyup=function(keyEvent){
-            CodeArea.enableTabKey()
-
-            Cursor.saveCursorPosition(keyEvent);
-            hljs.highlightAll();
-            Cursor.setLastCursorPosition(CodeArea._codeArea);
-
-            console.clear();
-        }
     }
-    static enableCode(typeCode){
-        CodeArea._codeArea = document.getElementById("codeArea");
-        CodeArea._setAttributes(typeCode)
-        CodeArea.enableHighlight();
-        console.clear();
+    static _setCodeArea(tagClass){
+        CodeArea._codeArea = document.getElementsByClassName(tagClass)[0];
     }
     static _setAttributes(typeCode){
         CodeArea._codeArea.setAttribute("contenteditable", "");
         CodeArea._codeArea.setAttribute("spellcheck", "false");
-        CodeArea._codeArea.setAttribute("class", typeCode);
+        CodeArea._codeArea.classList.add(typeCode)
     }
+    static _enableHighlight(){
+        hljs.highlightAll();
+        window.onkeyup=function(keyEvent){
+            Cursor.saveCursorPosition(keyEvent);
+            hljs.highlightAll();
+            Cursor.setLastCursorPosition(CodeArea._codeArea);
+        }
+    }
+    static enableTabKey() {
+        CodeArea._enableTabKey = true;
+        window.onkeydown=function(keyEvent){
+            if(keyEvent.code == "Tab") //перехватываем tab от гнусного браузера
+                return false
+        }
+    }
+    static disableTabKey() {
+        CodeArea._enableTabKey = false;
+        window.onkeydown=function(){ }
+    }
+
+    static addStyle(style) {
+        this._linkStyle = document.createElement("link")
+        this._linkStyle.rel = "stylesheet"
+        this._linkStyle.href = "//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/"+style+".min.css"
+        document.head.appendChild(this._linkStyle)
+    }
+    static changeStyle(style) {
+        this._linkStyle.href = "//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/"+style+".min.css"
+    }
+    static addHighlightScript() {
+        document.addEventListener("DOMContentLoaded", () =>{
+            var script = document.createElement("script")
+            script.src = "//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"
+            document.body.appendChild(script)
+        })
+    }
+
 }
+
+CodeArea.addHighlightScript()
+CodeArea.addStyle("atom-one-light")
+CodeArea.enableTabKey()
+CodeArea.enableCode("codeArea","cpp")
+
+/*
+    расширить до обработки множества полей
+ */

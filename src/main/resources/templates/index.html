@@ -7,25 +7,12 @@
     <script src="/static/js/scripts.js" th:src="@{/js/scripts.js}"></script>
 
 
-    <link rel="stylesheet"
-          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/atom-one-light.min.css">
-
 
 </head>
 <body>
-    <h1>Hello СУКА!</h1>
-    <pre>
 
-<code id="codeArea">
-// Определение своей функции-предиката.
-// Проверяет условие: x в квадрате меньше 2.
-bool sqr_lt_2(double x)
-{
-  return x*x < 2;
-}
-
-
-int main()
+    <pre><code class="codeArea"
+>int main()
 {
   double x = 0;
   while (true)
@@ -35,10 +22,7 @@ int main()
     cout << "x*x < 2  == " << sqr_lt_2(x) << endl;
   }
   return EXIT_SUCCESS;
-}
-        </code>
-    </pre>
+}</code></pre>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
 </body>
 </html>
